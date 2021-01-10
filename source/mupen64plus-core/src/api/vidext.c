@@ -39,6 +39,9 @@
 #include <drm/drm_fourcc.h>
 #include <gamestream_encoder.h>
 
+#define GO2_CONTEXT_WIDTH (640)
+#define GO2_CONTEXT_HEIGHT (480)
+
 gs_encoder_session_t* encoder;
 
 EXPORT gs_encoder_session_t* get_encoder()
@@ -142,8 +145,7 @@ EXPORT m64p_error CALL VidExt_Init(void)
     attr.depth_bits = 24;
     attr.stencil_bits = 8;
 
-    //context = go2_context_create(display, 480, 320, &attr);
-    context = go2_context_create(display, 320, 240, &attr);
+    context = go2_context_create(display, GO2_CONTEXT_WIDTH, GO2_CONTEXT_HEIGHT, &attr);
     go2_context_make_current(context);
 
 
@@ -251,8 +253,8 @@ EXPORT m64p_error CALL VidExt_ListFullscreenModes(m64p_2d_size *SizeArray, int *
     if (!display)
         return M64ERR_NOT_INIT;
 
-    SizeArray[0].uiWidth = 480; //kms_window->width;
-    SizeArray[0].uiHeight = 320; //kms_window->height;
+    SizeArray[0].uiWidth = GO2_CONTEXT_WIDTH;
+    SizeArray[0].uiHeight = GO2_CONTEXT_HEIGHT;
 
     *NumSizes = 1;
 
@@ -617,11 +619,9 @@ EXPORT m64p_error CALL VidExt_GL_SwapBuffers(void)
     go2_context_swap_buffers(context);
 
     go2_surface_t* surface = go2_context_surface_lock(context);
-    // go2_presenter_post(presenter,
-    //             surface,
-    //             0, 0, 480, 320,
-    //             0, 0, 320, 480,
-    //             GO2_ROTATION_DEGREES_270);
+    const float aspect = 4.0f / 3.0f;
+    const int w = go2_display_width_get(display) * aspect;
+    const int x = (go2_display_height_get(display) / 2) - (w / 2);
 
     if (gs_network_client_count_get(encoder) > 0)
     {
@@ -639,13 +639,13 @@ EXPORT m64p_error CALL VidExt_GL_SwapBuffers(void)
             firstFrameFlag = 0;
         }
 
-        gs_encoder_session_video_post(encoder, surface, 0, 0, 320, 240);
+        gs_encoder_session_video_post(encoder, surface, 0, 0, GO2_CONTEXT_WIDTH, GO2_CONTEXT_HEIGHT);
     }
 
     go2_presenter_post(presenter,
             surface,
-            0, 0, 320, 240,
-            0, 27, 320, 426,
+            0, 0, GO2_CONTEXT_WIDTH, GO2_CONTEXT_HEIGHT,
+            0, x, go2_display_width_get(display), w,
             GO2_ROTATION_DEGREES_270);
 
     go2_context_surface_unlock(context, surface);

@@ -33,14 +33,15 @@ fi
 mkdir -p ./test/
 MAKE_INSTALL="PLUGINDIR= SHAREDIR= BINDIR= MANDIR= LIBDIR= APPSDIR= ICONSDIR=icons INCDIR=api LDCONFIG=true "
 
-CFLAGS='-march=armv8-a+crc -mtune=cortex-a35 -fuse-linker-plugin'
+#CFLAGS='-march=armv8-a+crc -mtune=cortex-a35 -fuse-linker-plugin'
 CFLAGS="${FLAGS} -flto=$(nproc) -fuse-linker-plugin"
 export CFLAGS
 
 CXXFLAGS=$CFLAGS; export CXXFLAGS
 LDFLAGS=$CFLAGS; export LDFLAGS
 
-VARS="NEON=1 VFP_HARD=1 USE_GLES=1 HOST_CPU=armv7 V=1"
+#VARS="NEON=1 VFP_HARD=1 USE_GLES=1 HOST_CPU=armv7 V=1"
+VARS="BITS=64 USE_GLES=1 NEW_DYNAREC=1 V=1 HOST_CPU=aarch64 PIE=1"
 
 OPTFLAGS="-O3"
 export OPTFLAGS
@@ -60,7 +61,7 @@ for component in ${M64P_COMPONENTS}; do
 	fi
 
 	echo "************************************ Building ${component} ${component_type}"
-	"$MAKE" -C source/mupen64plus-${component}/projects/unix clean $VARS $@
+	#"$MAKE" -C source/mupen64plus-${component}/projects/unix clean $VARS $@
 	"$MAKE" -C source/mupen64plus-${component}/projects/unix all $VARS $@
 	"$MAKE" -C source/mupen64plus-${component}/projects/unix install $VARS $@ ${MAKE_INSTALL} DESTDIR="$(pwd)/test/"
 
